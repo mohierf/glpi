@@ -2655,4 +2655,48 @@ class Config extends CommonDBTM {
             </script>";
       return $msg;
    }
+
+   /**
+    * Get a cache adapter from configuration
+    *
+    * @param string $optname name of the configuration field
+    *
+    * @return Zend\Cache\Storage\StorageInterface object or false
+    */
+   public static function getCache($optname) {
+      global $CFG_GLPI;
+
+      if (defined('TU_USER') && ! defined('CACHED_TESTS')) {
+         return false;
+      }
+
+      // Adapter default options
+      $opt = [];
+      if (isset($CFG_GLPI[$optname])) {
+         $opt = json_decode($CFG_GLPI[$optname], true);
+      }
+      if (!isset($opt['options']['namespace'])) {
+         $opt['options']['namespace'] = "glpi_${optname}_" . GLPI_VERSION;
+      }
+      if (!isset($opt['adapter'])) {
+         if (function_exists('apcu_fetch')) {
+            $opt['adapter'] = (version_compare(PHP_VERSION, '7.0.0') >= 0) ? 'apcu' : 'apc';
+         } else if (function_exists('wincache_ucache_add')) {
+            $opt['adapter'] = 'wincache';
+         } else {
+            return false;
+         }
+      }
+
+      // Create adapter
+      $cache = false;
+      try {
+         $cache = Zend\Cache\StorageFactory::factory($opt);
+      } catch (Exception $e) {
+         if (Session::DEBUG_MODE == $_SESSION['glpi_use_mode']) {
+            Toolbox::logDebug($e->getMessage());
+         }
+      }
+      return $cache;
+   }
 }

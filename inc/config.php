@@ -288,6 +288,7 @@ if (!file_exists(GLPI_CONFIG_DIR . "/config_db.php")) {
       exit();
    }
 
+   $GLPI_CACHE = Config::getCache('cache_db');
 }
 
 try {
