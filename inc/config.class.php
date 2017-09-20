@@ -2673,6 +2673,9 @@ class Config extends CommonDBTM {
       // Adapter default options
       $opt = [];
       if (isset($CFG_GLPI[$optname])) {
+         if (empty($CFG_GLPI[$optname])) { // to disable cache
+            return false;
+         }
          $opt = json_decode($CFG_GLPI[$optname], true);
       }
       if (!isset($opt['options']['namespace'])) {
