@@ -1651,7 +1651,7 @@ class Config extends CommonDBTM {
             }
          }
       } else {
-         $ext = (version_compare(PHP_VERSION, '7.0.0') >= 0 ? 'APCu' : 'APC'); // Default cache, can be improved later
+         $ext = 'APCu'; // Default cache, can be improved later
          $msg = sprintf(__s('%s extension is not present'), $ext);
          echo "<tr><td colspan='3'>" . sprintf(__('Installing the "%s" extension may improve GLPI performance'), $ext) . "</td>
                <td><i class='fa fa-info-circle missing' title='$msg'></i><span class='sr-only'>$msg</span></td></tr>";
