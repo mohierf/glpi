@@ -2675,6 +2675,8 @@ class Config extends CommonDBTM {
        * - (empty = no cache)
        * - {"adapter":"apcu"}
        * - {"adapter":"redis","options":{"server":{"host":"127.0.0.1"}},"plugins":["serializer"]}
+       * - {"adapter":"filesystem","options":{"cache_dir":"_cache_trans"},"plugins":["serializer"]}
+       * - {"adapter":"dba","options":{"pathname":"trans.db","handler":"flatfile"},"plugins":["serializer"]}
        *
        */
       // Read configuration
@@ -2700,6 +2702,17 @@ class Config extends CommonDBTM {
          } else {
             return false;
          }
+      }
+      if (isset($opt['options']['cache_dir'])) {
+         // Make configured directory relative to GLPI cache directory
+         $opt['options']['cache_dir'] = GLPI_CACHE_DIR . '/' . $opt['options']['cache_dir'];
+         if (!is_dir($opt['options']['cache_dir'])) {
+            mkdir($opt['options']['cache_dir']);
+         }
+      }
+      if (isset($opt['options']['pathname'])) {
+         // Make configured path relative to GLPI cache directory
+         $opt['options']['pathname'] = GLPI_CACHE_DIR . '/' . $opt['options']['pathname'];
       }
 
       // Create adapter
