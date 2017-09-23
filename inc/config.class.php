@@ -1612,9 +1612,9 @@ class Config extends CommonDBTM {
       if (Toolbox::useCache()) {
          $ext = get_class($GLPI_CACHE);
          $ext = substr($ext, strrpos($ext, '\\')+1);
-         $msg = sprintf(__s('%s extension is installed'), $ext);
+         $msg = sprintf(__s('The "%s" extension is installed'), $ext);
          echo "<tr><td>" . sprintf(__('The "%s" extension is installed'), $ext) . "</td>
-               <td></td>
+               <td>" . phpversion($ext) . "</td>
                <td></td>
                <td class='icons_block'><i class='fa fa-check-circle ok' title='$msg'></i><span class='sr-only'>$msg</span></td></tr>";
 
