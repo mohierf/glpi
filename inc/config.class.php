@@ -35,6 +35,9 @@
 */
 
 use Glpi\Exception\PasswordTooWeakException;
+use Zend\Cache\Storage\AvailableSpaceCapableInterface;
+use Zend\Cache\Storage\TotalSpaceCapableInterface;
+use Zend\Cache\Storage\FlushableInterface;
 
 if (!defined('GLPI_ROOT')) {
    die("Sorry. You can't access this file directly");
@@ -1525,6 +1528,8 @@ class Config extends CommonDBTM {
     * @since 9.1
    **/
    function showPerformanceInformations() {
+      global $GLPI_CACHE;
+
       if (!Config::canUpdate()) {
          return false;
       }
@@ -1604,62 +1609,49 @@ class Config extends CommonDBTM {
       }
 
       echo "<tr><th colspan='4'>" . __('User data cache') . "</th></tr>";
-      $ext = 'APCu';
-      if (function_exists('apcu_fetch') && ini_get('apc.enabled')) {
+      if (Toolbox::useCache()) {
+         $ext = get_class($GLPI_CACHE);
+         $ext = substr($ext, strrpos($ext, '\\')+1);
          $msg = sprintf(__s('%s extension is installed'), $ext);
          echo "<tr><td>" . sprintf(__('The "%s" extension is installed'), $ext) . "</td>
-               <td>" . phpversion('apc') . "</td>
+               <td></td>
                <td></td>
                <td class='icons_block'><i class='fa fa-check-circle ok' title='$msg'></i><span class='sr-only'>$msg</span></td></tr>";
 
-         $info = apcu_sma_info(true);
-         $stat = apcu_cache_info(true);
+         if ($GLPI_CACHE instanceof AvailableSpaceCapableInterface && $GLPI_CACHE instanceof TotalSpaceCapableInterface) {
+            $free = $GLPI_CACHE->getAvailableSpace();
+            $max  = $GLPI_CACHE->getTotalSpace();
+            $used = $max - $free;
+            $rate = round(100.0 * $used / $max);
+            $max  = Toolbox::getSize($max);
+            $used = Toolbox::getSize($used);
 
-         // Memory
-         $max  = $info['num_seg'] * $info['seg_size'];
-         $free = $info['avail_mem'];
-         $used = $max - $free;
-         $rate = round(100.0 * $used / $max);
-         $max  = Toolbox::getSize($used + $free);
-         $used = Toolbox::getSize($used);
-         echo "<tr><td>" . __('Memory') . "</td>
-               <td>" . sprintf(__('%1$s / %2$s'), $used, $max) . "</td><td>";
-         Html::displayProgressBar('100', $rate, ['simple'       => true,
-                                                      'forcepadding' => false]);
-
-         $class   = 'info-circle missing';
-         $msg     = sprintf(__s('%1$ss memory usage is too low or too high'), $ext);
-         if ($rate > 5 && $rate < 50) {
-            $class   = 'check-circle ok';
-            $msg     = sprintf(__s('%1$s memory usage is correct'), $ext);
+            echo "<tr><td>" . __('Memory') . "</td>
+            <td>" . sprintf(__('%1$s / %2$s'), $used, $max) . "</td><td>";
+            Html::displayProgressBar('100', $rate, ['simple'       => true,
+                                                    'forcepadding' => false]);
+            $class   = 'info-circle missing';
+            $msg     = sprintf(__s('%1$ss memory usage is too low or too high'), $ext);
+            if ($rate > 5 && $rate < 50) {
+               $class   = 'check-circle ok';
+               $msg     = sprintf(__s('%1$s memory usage is correct'), $ext);
+            }
+            echo "</td><td class='icons_block'><i title='$msg' class='fa fa-$class'></td></tr>";
+         } else {
+            echo "<tr><td>" . __('Memory') . "</td>
+               <td>" . NOT_AVAILABLE. "</td><td>" . NOT_AVAILABLE . "</td><td></td></tr>";
          }
-         echo "</td><td class='icons_block'><i title='$msg' class='fa fa-$class'></td></tr>";
 
-         // Hits
-         $hits = $stat['num_hits'];
-         $miss = $stat['num_misses'];
-         $max  = $hits+$miss;
-         $rate = round(100 * $hits / ($hits + $miss));
-         echo "<tr><td>" . __('Hits rate') . "</td>
-               <td>" . sprintf(__('%1$s / %2$s'), $hits, $max) . "</td><td>";
-         Html::displayProgressBar('100', $rate, ['simple'       => true,
-                                                      'forcepadding' => false]);
-
-         $class   = 'info-circle missing';
-         $msg     = sprintf(__s('%1$ss hits rate is low'), $ext);
-         if ($rate > 90) {
-            $class   = 'check-circle ok';
-            $msg     = sprintf(__s('%1$s hits rate is correct'), $ext);
-         }
-         echo "</td><td class='icons_block'><i title='$msg' class='fa fa-$class'></td></tr>";
-
-         if ($_SESSION['glpi_use_mode'] == Session::DEBUG_MODE) {
-            echo "<tr><td></td><td colspan='3'>";
-            echo "<a class='vsubmit' href='config.form.php?reset_apcu=1'>";
-            echo __('Reset');
-            echo "</a></td></tr>\n";
+         if ($GLPI_CACHE instanceof FlushableInterface) {
+            if ($_SESSION['glpi_use_mode'] == Session::DEBUG_MODE) {
+               echo "<tr><td></td><td colspan='3'>";
+               echo "<a class='vsubmit' href='config.form.php?reset_cache=1'>";
+               echo __('Reset');
+               echo "</a></td></tr>\n";
+            }
          }
       } else {
+         $ext = (version_compare(PHP_VERSION, '7.0.0') >= 0 ? 'APCu' : 'APC'); // Default cache, can be improved later
          $msg = sprintf(__s('%s extension is not present'), $ext);
          echo "<tr><td colspan='3'>" . sprintf(__('Installing the "%s" extension may improve GLPI performance'), $ext) . "</td>
                <td><i class='fa fa-info-circle missing' title='$msg'></i><span class='sr-only'>$msg</span></td></tr>";
