@@ -2679,6 +2679,8 @@ class Config extends CommonDBTM {
        * - {"adapter":"filesystem","options":{"cache_dir":"_cache_trans"},"plugins":["serializer"]}
        * - {"adapter":"dba"}
        * - {"adapter":"dba","options":{"pathname":"trans.db","handler":"flatfile"},"plugins":["serializer"]}
+       * - {"adapter":"memcache","options":{"servers":["127.0.0.1"]}}
+       * - {"adapter":"memcached","options":{"servers":["127.0.0.1"]}}
        *
        */
       // Read configuration
