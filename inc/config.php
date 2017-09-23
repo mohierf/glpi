@@ -290,21 +290,3 @@ if (!file_exists(GLPI_CONFIG_DIR . "/config_db.php")) {
 
    $GLPI_CACHE = Config::getCache('cache_db');
 }
-
-try {
-   if (function_exists('apcu_fetch') && (!defined('TU_USER') || defined('CACHED_TESTS'))) {
-      //ZendCache does not works with PHP5 acpu...
-      $adapter = (version_compare(PHP_VERSION, '7.0.0') >= 0) ? 'apcu' : 'apc';
-      $GLPI_CACHE = Zend\Cache\StorageFactory::factory([
-         'adapter'   => $adapter,
-         'options'   => [
-            'namespace' => 'glpicache' . GLPI_VERSION
-         ]
-      ]);
-   }
-} catch (Exception $e) {
-   $GLPI_CACHE = false;
-   if (isset($_SESSION['glpi_use_mode']) && Session::DEBUG_MODE == $_SESSION['glpi_use_mode']) {
-      Toolbox::logDebug($e->getMessage());
-   }
-}
