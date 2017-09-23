@@ -2660,23 +2660,34 @@ class Config extends CommonDBTM {
     * Get a cache adapter from configuration
     *
     * @param string $optname name of the configuration field
+    * @param string $context name of the configuration context (default 'core')
     *
     * @return Zend\Cache\Storage\StorageInterface object or false
     */
-   public static function getCache($optname) {
-      global $CFG_GLPI;
+   public static function getCache($optname, $context='core') {
 
       if (defined('TU_USER') && ! defined('CACHED_TESTS')) {
          return false;
       }
 
+      /* Tested configuration values
+       *
+       * - (empty = no cache)
+       * - {"adapter":"apcu"}
+       * - {"adapter":"redis","options":{"server":{"host":"127.0.0.1"}},"plugins":["serializer"]}
+       *
+       */
+      // Read configuration
+      $conf = self::getConfigurationValues($context, [$optname]);
+
       // Adapter default options
       $opt = [];
-      if (isset($CFG_GLPI[$optname])) {
-         if (empty($CFG_GLPI[$optname])) { // to disable cache
+      if (isset($conf[$optname])) {
+         if (empty($conf[$optname])) { // to disable cache
             return false;
          }
-         $opt = json_decode($CFG_GLPI[$optname], true);
+         $opt = json_decode($conf[$optname], true);
+         //Toolbox::logDebug("CACHE CONFIG  $optname", $opt);
       }
       if (!isset($opt['options']['namespace'])) {
          $opt['options']['namespace'] = "glpi_${optname}_" . GLPI_VERSION;
@@ -2700,6 +2711,7 @@ class Config extends CommonDBTM {
             Toolbox::logDebug($e->getMessage());
          }
       }
+      //Toolbox::logDebug("CACHE $optname", get_class($cache));
       return $cache;
    }
 }
