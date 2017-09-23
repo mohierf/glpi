@@ -2675,7 +2675,9 @@ class Config extends CommonDBTM {
        * - (empty = no cache)
        * - {"adapter":"apcu"}
        * - {"adapter":"redis","options":{"server":{"host":"127.0.0.1"}},"plugins":["serializer"]}
+       * - {"adapter":"filesystem"}
        * - {"adapter":"filesystem","options":{"cache_dir":"_cache_trans"},"plugins":["serializer"]}
+       * - {"adapter":"dba"}
        * - {"adapter":"dba","options":{"pathname":"trans.db","handler":"flatfile"},"plugins":["serializer"]}
        *
        */
@@ -2703,16 +2705,37 @@ class Config extends CommonDBTM {
             return false;
          }
       }
-      if (isset($opt['options']['cache_dir'])) {
-         // Make configured directory relative to GLPI cache directory
-         $opt['options']['cache_dir'] = GLPI_CACHE_DIR . '/' . $opt['options']['cache_dir'];
-         if (!is_dir($opt['options']['cache_dir'])) {
-            mkdir($opt['options']['cache_dir']);
-         }
+      // Adapter specific options
+      $ser = false;
+      switch ($opt['adapter']) {
+         case 'filesystem':
+            if (!isset($opt['options']['cache_dir'])) {
+               $opt['options']['cache_dir'] = $optname;
+            }
+            // Make configured directory relative to GLPI cache directory
+            $opt['options']['cache_dir'] = GLPI_CACHE_DIR . '/' . $opt['options']['cache_dir'];
+            if (!is_dir($opt['options']['cache_dir'])) {
+               mkdir($opt['options']['cache_dir']);
+            }
+            $ser = true;
+            break;
+
+         case 'dba':
+            if (!isset($opt['options']['pathname'])) {
+               $opt['options']['pathname'] = "$optname.data";
+            }
+            // Make configured path relative to GLPI cache directory
+            $opt['options']['pathname'] = GLPI_CACHE_DIR . '/' . $opt['options']['pathname'];
+            $ser = true;
+            break;
+
+         case 'redis':
+            $ser = true;
+            break;
       }
-      if (isset($opt['options']['pathname'])) {
-         // Make configured path relative to GLPI cache directory
-         $opt['options']['pathname'] = GLPI_CACHE_DIR . '/' . $opt['options']['pathname'];
+      // Some know plugins require data serialization
+      if ($ser && !isset($opt['plugins'])) {
+         $opt['plugins'] = ['serializer'];
       }
 
       // Create adapter
