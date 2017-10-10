@@ -119,4 +119,13 @@ echo "+ Done\n";
 > time: 0.1247
 + Done
 
++ Entities: 299593
++ Cache: Zend\Cache\Storage\Adapter\WinCache
++ Clear sons cache
++ Run with empty cache
+> time: 5.1352
++ Run with populated cache
+> time: 0.1560
++ Done
+
 */

@@ -2675,7 +2675,8 @@ class Config extends CommonDBTM {
        * - {"adapter":"dba","options":{"pathname":"trans.db","handler":"flatfile"},"plugins":["serializer"]}
        * - {"adapter":"memcache","options":{"servers":["127.0.0.1"]}}
        * - {"adapter":"memcached","options":{"servers":["127.0.0.1"]}}
-       *
+       * - {"adapter":"wincache"}
+       * 
        */
       // Read configuration
       $conf = self::getConfigurationValues($context, [$optname]);
@@ -2695,8 +2696,8 @@ class Config extends CommonDBTM {
       if (!isset($opt['adapter'])) {
          if (function_exists('apcu_fetch')) {
             $opt['adapter'] = (version_compare(PHP_VERSION, '7.0.0') >= 0) ? 'apcu' : 'apc';
-         //} else if (function_exists('wincache_ucache_add')) {
-         //   $opt['adapter'] = 'wincache';
+         } else if (function_exists('wincache_ucache_add')) {
+            $opt['adapter'] = 'wincache';
          } else {
             return false;
          }
