@@ -62,7 +62,8 @@ for ($i=0; $i<COUNT; $i++) {
       echo "$i\r";
    }
    $t[$i] = $id = mt_rand(0, $nb);
-   $x = getSonsAndAncestorsOf('glpi_entities', $id);
+   //$x = getSonsOf('glpi_entities', $id);
+   $x = getAncestorsOf('glpi_entities', $id);
 }
 $tps = microtime(true) - $tps;
 printf("> time: %.4f\n", $tps);
@@ -74,7 +75,8 @@ for ($i=0; $i<COUNT; $i++) {
       echo "$i\r";
    }
    $id = $t[$i];
-   $x = getSonsAndAncestorsOf('glpi_entities', $id);
+   //$x = getSonsOf('glpi_entities', $id);
+   $x = getAncestorsOf('glpi_entities', $id);
 }
 $tps = microtime(true) - $tps;
 printf("> time: %.4f\n", $tps);
@@ -123,9 +125,9 @@ echo "+ Done\n";
 + Cache: Zend\Cache\Storage\Adapter\WinCache
 + Clear sons cache
 + Run with empty cache
-> time: 5.1352
+> time: 2.3284
 + Run with populated cache
-> time: 0.1560
+> time: 0.0780
 + Done
 
 */
