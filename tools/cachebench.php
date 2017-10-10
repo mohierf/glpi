@@ -62,7 +62,8 @@ for ($i=0; $i<COUNT; $i++) {
       echo "$i\r";
    }
    $t[$i] = $id = mt_rand(0, $nb);
-   $x = getSonsAndAncestorsOf('glpi_entities', $id);
+   //$x = getSonsOf('glpi_entities', $id);
+   $x = getAncestorsOf('glpi_entities', $id);
 }
 $tps = microtime(true) - $tps;
 printf("> time: %.4f\n", $tps);
@@ -74,7 +75,8 @@ for ($i=0; $i<COUNT; $i++) {
       echo "$i\r";
    }
    $id = $t[$i];
-   $x = getSonsAndAncestorsOf('glpi_entities', $id);
+   //$x = getSonsOf('glpi_entities', $id);
+   $x = getAncestorsOf('glpi_entities', $id);
 }
 $tps = microtime(true) - $tps;
 printf("> time: %.4f\n", $tps);
