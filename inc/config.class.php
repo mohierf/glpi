@@ -2676,7 +2676,7 @@ class Config extends CommonDBTM {
        * - {"adapter":"memcache","options":{"servers":["127.0.0.1"]}}
        * - {"adapter":"memcached","options":{"servers":["127.0.0.1"]}}
        * - {"adapter":"wincache"}
-       * 
+       *
        */
       // Read configuration
       $conf = self::getConfigurationValues($context, [$optname]);
