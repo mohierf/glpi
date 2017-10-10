@@ -85,7 +85,7 @@ echo "+ Done\n";
 + Run with empty cache
 > time: 2.7468
 + Run with populated cache
-> time: 2.6772
+> time: 2.4121
 + Done
 
 + Entities: 299598
