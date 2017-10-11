@@ -4651,7 +4651,7 @@ class Ticket extends CommonITILObject {
     * @param $status             (default ''process)
     * @param $showgrouptickets   (true by default)
     */
-   static function showCentralList($start, $status="process", $showgrouptickets=true) {
+   static function showCentralList($start, $status="process", $showgrouptickets=true, $includeLocation=true) {
       global $DB, $CFG_GLPI;
 
       if (!Session::haveRightsOr(self::$rightname, array(CREATE, self::READALL, self::READASSIGN))
@@ -4803,7 +4803,11 @@ class Ticket extends CommonITILObject {
 
       if ($numrows > 0) {
          echo "<table class='tab_cadrehov'>";
-         echo "<tr class='noHover'><th colspan='4'>";
+         if ($includeLocation) {
+            echo "<tr class='noHover'><th colspan='5'>";
+         } else {
+            echo "<tr class='noHover'><th colspan='4'>";
+         }
 
          $options['reset'] = 'reset';
          $forcetab         = '';
@@ -5072,10 +5076,13 @@ class Ticket extends CommonITILObject {
             echo "<tr><th></th>";
             echo "<th>".__('Requester')."</th>";
             echo "<th>"._n('Associated element', 'Associated elements', Session::getPluralNumber())."</th>";
+            if ($includeLocation) {
+               echo "<th>".__('Location')."</th>";
+            }
             echo "<th>".__('Description')."</th></tr>";
             for ($i = 0 ; $i < $number ; $i++) {
                $ID = $DB->result($result, $i, "id");
-               self::showVeryShort($ID, $forcetab);
+               self::showVeryShort($ID, $forcetab, true);
             }
          }
          echo "</table>";
@@ -5497,7 +5504,7 @@ class Ticket extends CommonITILObject {
     * @param $ID
     * @param $forcetab  string   name of the tab to force at the display (default '')
    **/
-   static function showVeryShort($ID, $forcetab='') {
+   static function showVeryShort($ID, $forcetab='', $includeLocation=false) {
       global $CFG_GLPI;
 
       // Prints a job in short form
@@ -5563,9 +5570,16 @@ class Ticket extends CommonITILObject {
          } else {
             echo __('General');
          }
+         echo "</td>";
+
+         // Include ticket location in the global view
+         if ($includeLocation) {
+            echo "<td class='center'>";
+            echo Dropdown::getDropdownName('glpi_locations', $job->fields["locations_id"]);
+            echo "</td>";
+         }
+
          echo "<td>";
-
-
          $link = "<a id='ticket".$job->fields["id"].$rand."' href='".$CFG_GLPI["root_doc"].
                    "/front/ticket.form.php?id=".$job->fields["id"];
          if ($forcetab != '') {
