@@ -4510,6 +4510,69 @@ class Ticket extends CommonITILObject {
       echo "</td>";
       echo "</tr>";
 
+      // Add documents links in the ticket main form
+      $pics_url = $CFG_GLPI['root_doc']."/pics/timeline";
+      $document_item_obj = new Document_Item();
+      $document_obj   = new Document();
+      $document_items = $document_item_obj->find("itemtype = 'Ticket' AND items_id = ".$this->getID());
+      echo "<tr class='tab_bg_1'>";
+      echo "<th style='width:$colsize1%'>". _n('Document', 'Documents',
+            Session::getPluralNumber());
+      echo '</th>';
+      echo "<td colspan='3'>";
+      foreach ($document_items as $document_item) {
+         // Get the documents linked to the ticket
+         $document_obj->getFromDB($document_item['documents_id']);
+
+         // Get the document and its fields in an array
+         $doc = new Document();
+         $doc->getFromDB($document_item['documents_id']);
+         $doc = $doc->fields;
+
+         if (!empty($doc['filename'])) {
+            echo '<div style="float: left; height: 60px; padding: 5px; margin-right: 5px; border: outset 3px; border-radius: 5px;">';
+
+            $filename = $doc['filename'];
+            $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+            echo '<img src="';
+            if (file_exists(GLPI_ROOT."/pics/icones/$ext-dist.png")) {
+               echo $CFG_GLPI['root_doc']."/pics/icones/$ext-dist.png";
+            } else {
+               echo "$pics_url/file.png";
+            }
+            echo '"/>&nbsp;';
+
+            if (empty($filename)) {
+               $filename = $doc['name'];
+            }
+            echo "<a href='".$CFG_GLPI['root_doc']."/front/document.send.php?docid=".$doc['id']
+               ."&tickets_id=".$this->getID()."' target='_blank'>$filename";
+
+            if (in_array($ext, array('jpg', 'jpeg', 'png', 'bmp'))) {
+               echo "<div>";
+               echo "<img style='margin: auto; display: block; width: 36px; height: 36px;' src='".$CFG_GLPI['root_doc']."/front/document.send.php?docid=".$doc['id']
+                  ."&tickets_id=".$this->getID()."'/>";
+               echo "</div>";
+            }
+
+            echo "</a>";
+            echo "</div>";
+         }
+         if ($document_item['link']) {
+            echo "<a href='{$doc['link']}' target='_blank'>{$doc['name']}</a>";
+         }
+//         if (!empty($doc['mime'])) {
+//            echo "&nbsp;(".$doc['mime'].")";
+//         }
+//         echo "<a href='".$CFG_GLPI['root_doc'].
+//            "/front/document.form.php?id=".$doc['id']."' class='edit_document' title='".
+//            _sx("button", "Show")."'>";
+//         echo "<img src='$pics_url/information.png' /></a>";
+
+      }
+      echo "</td>";
+      echo "</tr>";
+
       echo "<tr class='tab_bg_1'>";
       echo "<th style='width:$colsize1%'>". _n('Linked ticket', 'Linked tickets',
                                                Session::getPluralNumber());
