@@ -2725,6 +2725,36 @@ class Ticket extends CommonITILObject {
 
       }
 
+      $tab['dates']             = __('Dates');
+
+      $tab[201]['table']               = $this->getTable();
+      $tab[201]['field']               = 'date';
+      $tab[201]['name']                = __('Opening date') . " - " . __('Date');
+      $tab[201]['datatype']            = 'specific';
+      $tab[201]['massiveaction']       = false;
+      $tab[201]['date_format']         = "date";
+
+      $tab[211]['table']               = $this->getTable();
+      $tab[211]['field']               = 'date';
+      $tab[211]['name']                = __('Opening date') . " - " . __('Hour');
+      $tab[211]['datatype']            = 'specific';
+      $tab[211]['massiveaction']       = false;
+      $tab[211]['date_format']         = "time";
+
+      $tab[202]['table']               = $this->getTable();
+      $tab[202]['field']               = 'closedate';
+      $tab[202]['name']                = __('Closing date') . " - " . __('Date');
+      $tab[202]['datatype']            = 'specific';
+      $tab[202]['massiveaction']       = false;
+      $tab[202]['date_format']         = "date";
+
+      $tab[212]['table']               = $this->getTable();
+      $tab[212]['field']               = 'closedate';
+      $tab[212]['name']                = __('Closing date') . " - " . __('Hour');
+      $tab[212]['datatype']            = 'specific';
+      $tab[212]['massiveaction']       = false;
+      $tab[212]['date_format']         = "time";
+
       // Filter search fields for helpdesk
       if (!Session::isCron() // no filter for cron
           && (!isset($_SESSION['glpiactiveprofile']['interface'])
@@ -2776,6 +2806,24 @@ class Ticket extends CommonITILObject {
 
          case 'type':
             return self::getTicketTypeName($values[$field]);
+
+         case 'date':
+         case 'closedate':
+            switch ($options["searchopt"]["date_format"]) {
+               case 'datetime' :
+                  $output = $values[$field];
+                  break;
+               case 'date' :
+                  $output = Html::convDate($values[$field]);
+                  break;
+               case 'time' :
+                  $output = substr($values[$field], 11, 8);
+                  break;
+               default:
+                  $output = "Bad formatting configuration: " . $options["date_format"];
+                  break;
+            }
+            return $output;
       }
       return parent::getSpecificValueToDisplay($field, $values, $options);
    }
